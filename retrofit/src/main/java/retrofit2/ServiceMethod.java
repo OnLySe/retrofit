@@ -25,6 +25,7 @@ abstract class ServiceMethod<T> {
   static <T> ServiceMethod<T> parseAnnotations(Retrofit retrofit, Method method) {
     RequestFactory requestFactory = RequestFactory.parseAnnotations(retrofit, method);
 
+    //获取返回值类型，如是Call<List<String>>，则会返回Call<List<String>>，而不是Call。
     Type returnType = method.getGenericReturnType();
     if (Utils.hasUnresolvableType(returnType)) {
       throw methodError(

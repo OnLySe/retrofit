@@ -172,15 +172,18 @@ final class RequestFactory {
       this.retrofit = retrofit;
       this.method = method;
       this.methodAnnotations = method.getAnnotations();
+      //获取方法参数类型信息，包括泛型信息。
       this.parameterTypes = method.getGenericParameterTypes();
       this.parameterAnnotationsArray = method.getParameterAnnotations();
     }
 
     RequestFactory build() {
       for (Annotation annotation : methodAnnotations) {
+        //解析方法上的注解，这里仅处理Retrofit定义的注解，注意，不能添加多个，如@Get和@Post不能同时出现
         parseMethodAnnotation(annotation);
       }
 
+      //在 parseMethodAnnotation() 中已经确定httpMethod的值
       if (httpMethod == null) {
         throw methodError(method, "HTTP method annotation is required (e.g., @GET, @POST, etc.).");
       }
@@ -200,8 +203,10 @@ final class RequestFactory {
       }
 
       int parameterCount = parameterAnnotationsArray.length;
+      //这里是创建ParameterHandler类型数组，而不是ParameterHandler对象，ParameterHandler是抽象类。
       parameterHandlers = new ParameterHandler<?>[parameterCount];
       for (int p = 0, lastParameter = parameterCount - 1; p < parameterCount; p++) {
+        //拿到对应参数的类型泛型信息，以及参数上的注解。
         parameterHandlers[p] =
             parseParameter(p, parameterTypes[p], parameterAnnotationsArray[p], p == lastParameter);
       }
@@ -222,6 +227,10 @@ final class RequestFactory {
       return new RequestFactory(this);
     }
 
+    /**
+     * 解析方法上的注解，这里仅处理Retrofit定义的注解
+     * @param annotation
+     */
     private void parseMethodAnnotation(Annotation annotation) {
       if (annotation instanceof DELETE) {
         parseHttpMethodAndPath("DELETE", ((DELETE) annotation).value(), false);
@@ -320,6 +329,7 @@ final class RequestFactory {
         int p, Type parameterType, @Nullable Annotation[] annotations, boolean allowContinuation) {
       ParameterHandler<?> result = null;
       if (annotations != null) {
+        //对参数上的注解数组进行遍历，方法参数可以添加多个注解。
         for (Annotation annotation : annotations) {
           ParameterHandler<?> annotationAction =
               parseParameterAnnotation(p, parameterType, annotations, annotation);
@@ -328,6 +338,7 @@ final class RequestFactory {
             continue;
           }
 
+          //方法参数可以添加多个注解，处理完一个注解后，result就会被赋值，不再为null。也就是为一个参数添加多个注解在这里会抛出异常。
           if (result != null) {
             throw parameterError(
                 method, p, "Multiple Retrofit annotations found, only one allowed.");
@@ -337,6 +348,7 @@ final class RequestFactory {
         }
       }
 
+      //如果未添加Retrofit定义的注解，如@Path等，也会抛出异常
       if (result == null) {
         if (allowContinuation) {
           try {
@@ -353,6 +365,14 @@ final class RequestFactory {
       return result;
     }
 
+    /**
+     * 解析方法上的注解
+     * @param p 索引，表示方法中参数列表中的位置，在出现问题时，可以定位是哪个参数
+     * @param type 参数类型信息，如果是泛型类型，则完整显示泛型类型
+     * @param annotations 注解数组，参数上可以添加多个注解
+     * @param annotation 指定解析的注解，这里只解析Retrofit定义的注解，如@Path
+     * @return
+     */
     @Nullable
     private ParameterHandler<?> parseParameterAnnotation(
         int p, Type type, Annotation[] annotations, Annotation annotation) {

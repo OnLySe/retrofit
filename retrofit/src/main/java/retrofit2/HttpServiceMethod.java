@@ -60,6 +60,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
       adapterType = new Utils.ParameterizedTypeImpl(null, Call.class, responseType);
       annotations = SkipCallbackExecutorImpl.ensurePresent(annotations);
     } else {
+      //获取方法返回值，带有泛型类型，如Call<List<String>>,则返回Call<List<String>>，而不是String
       adapterType = method.getGenericReturnType();
     }
 

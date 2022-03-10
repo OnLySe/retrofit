@@ -35,15 +35,17 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
   @Override
   public @Nullable CallAdapter<?, ?> get(
       Type returnType, Annotation[] annotations, Retrofit retrofit) {
+    //returnType:retrofit2.Call<java.util.List<com.example.retrofit.SimpleService$Contributor>>
     if (getRawType(returnType) != Call.class) {
       return null;
     }
     if (!(returnType instanceof ParameterizedType)) {
+      //要求接口方法返回值类型必须是参数化类型
       throw new IllegalArgumentException(
           "Call return type must be parameterized as Call<Foo> or Call<? extends Foo>");
     }
     final Type responseType = Utils.getParameterUpperBound(0, (ParameterizedType) returnType);
-
+    //responseType:java.util.List<com.example.retrofit.SimpleService$Contributor>
     final Executor executor =
         Utils.isAnnotationPresent(annotations, SkipCallbackExecutor.class)
             ? null

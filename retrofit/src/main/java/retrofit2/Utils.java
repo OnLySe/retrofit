@@ -324,7 +324,15 @@ final class Utils {
     return ResponseBody.create(body.contentType(), body.contentLength(), buffer);
   }
 
+  /**
+   * 获取指定type这个参数化类型所具有的类型参数数组，如果没有类型参数，长度为0。如果是通配符类型，则取上限
+   *
+   * @param index 索引位置，这里指获取类型参数数组中的索引位置上的元素
+   * @param type 参数化类型
+   * @return 如果type是通配符类型，则取上限，否则返回参数化类型的参数中的类型参数数组中指定索引位置上的元素
+   */
   static Type getParameterUpperBound(int index, ParameterizedType type) {
+    //如Map<String, Runnable>, getActualTypeArguments()返回Type[],元素分别是String.class和Runnable.class
     Type[] types = type.getActualTypeArguments();
     if (index < 0 || index >= types.length) {
       throw new IllegalArgumentException(
@@ -332,11 +340,19 @@ final class Utils {
     }
     Type paramType = types[index];
     if (paramType instanceof WildcardType) {
+      //通配符类型，这里默认取<extends>类型的泛型类型，只取上限，如果没有指明上限，如声明为List<?>，则返回Object
       return ((WildcardType) paramType).getUpperBounds()[0];
     }
     return paramType;
   }
 
+    /**
+     * 与{@link #getParameterUpperBound(int, ParameterizedType)}类似，不同之处在于如果type是通配符类型，则去下限。
+     *
+     * @param index 索引位置，这里指获取类型参数数组中的索引位置上的元素
+     * @param type 参数化类型
+     * @return 如果type是通配符类型，则取下限，否则返回参数化类型的参数中的类型参数数组中指定索引位置上的元素
+     */
   static Type getParameterLowerBound(int index, ParameterizedType type) {
     Type paramType = type.getActualTypeArguments()[index];
     if (paramType instanceof WildcardType) {

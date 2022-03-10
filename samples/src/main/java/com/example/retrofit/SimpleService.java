@@ -16,49 +16,109 @@
 package com.example.retrofit;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.List;
-import retrofit2.Call;
-import retrofit2.Retrofit;
+import java.util.function.LongUnaryOperator;
+
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import org.jetbrains.annotations.Nullable;
+import retrofit2.*;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 
 public final class SimpleService {
-  public static final String API_URL = "https://api.github.com";
+    public static final String API_URL = "https://api.github.com";
 
-  public static class Contributor {
-    public final String login;
-    public final int contributions;
+    public static class Contributor {
+        public final String login;
+        public final int contributions;
 
-    public Contributor(String login, int contributions) {
-      this.login = login;
-      this.contributions = contributions;
+        public Contributor(String login, int contributions) {
+            this.login = login;
+            this.contributions = contributions;
+        }
     }
-  }
 
-  public interface GitHub {
-    @GET("/repos/{owner}/{repo}/contributors")
-    Call<List<Contributor>> contributors(@Path("owner") String owner, @Path("repo") String repo);
-  }
-
-  public static void main(String... args) throws IOException {
-    // Create a very simple REST adapter which points the GitHub API.
-    Retrofit retrofit =
-        new Retrofit.Builder()
-            .baseUrl(API_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build();
-
-    // Create an instance of our GitHub API interface.
-    GitHub github = retrofit.create(GitHub.class);
-
-    // Create a call instance for looking up Retrofit contributors.
-    Call<List<Contributor>> call = github.contributors("square", "retrofit");
-
-    // Fetch and print a list of the contributors to the library.
-    List<Contributor> contributors = call.execute().body();
-    for (Contributor contributor : contributors) {
-      System.out.println(contributor.login + " (" + contributor.contributions + ")");
+    public interface GitHub {
+        @GET("/repos/{owner}/{repo}/contributors")
+        Call<List<Contributor>> contributors(@Path("owner") String owner, @Path("repo") String repo);
     }
-  }
+
+    public static void main(String... args) throws IOException {
+        // Create a very simple REST adapter which points the GitHub API.
+
+        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor(System.out::println);
+        OkHttpClient okHttpClient = new OkHttpClient.Builder().addInterceptor(
+                interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)).build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(API_URL)
+                .client(okHttpClient)
+//                .addCallAdapterFactory(new StringCallAdapterFactory())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+//    Retrofit retrofit =
+//        new Retrofit.Builder()
+//            .baseUrl(API_URL)
+//            .addConverterFactory(GsonConverterFactory.create())
+//            .build();
+
+        // Create an instance of our GitHub API interface.
+        GitHub github = retrofit.create(GitHub.class);
+
+        // Create a call instance for looking up Retrofit contributors.
+        Call<List<Contributor>> call = github.contributors("square", "retrofit");
+
+        // Fetch and print a list of the contributors to the library.
+        /*List<Contributor> contributors = call.execute().body();
+        for (Contributor contributor : contributors) {
+            System.out.println(contributor.login + " (" + contributor.contributions + ")");
+        }*/
+
+        call.enqueue(new Callback<List<Contributor>>() {
+            @Override
+            public void onResponse(Call<List<Contributor>> call, Response<List<Contributor>> response) {
+                List<Contributor> contributors = response.body();
+                for (Contributor contributor : contributors) {
+                    System.out.println(contributor.login + " (" + contributor.contributions + ")");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Contributor>> call, Throwable t) {
+
+            }
+        });
+    }
+
+     static class StringCallAdapterFactory extends CallAdapter.Factory {
+
+         @Nullable
+         @Override
+         public CallAdapter<?, ?> get(Type returnType, Annotation[] annotations, Retrofit retrofit) {
+             if(returnType == String.class)
+                 return new StringCallAdapter();
+             return null;
+         }
+
+         static class StringCallAdapter implements CallAdapter<String,String>{
+            @Override
+            public Type responseType() {
+                return String.class;
+            }
+
+            @Override
+            public String adapt(Call<String> call) {
+                try {
+                    return call.execute().body();
+                } catch (Exception e) {
+                    System.out.println(e);
+                    e.printStackTrace();
+                }
+                return "";
+            }
+        }
+    }
+
 }
