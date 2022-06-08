@@ -44,6 +44,8 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
       throw new IllegalArgumentException(
           "Call return type must be parameterized as Call<Foo> or Call<? extends Foo>");
     }
+    //returnType:retrofit2.Call<java.util.List<com.example.retrofit.SimpleService$Contributor>>
+    //responseType:java.util.List<com.example.retrofit.SimpleService$Contributor>
     final Type responseType = Utils.getParameterUpperBound(0, (ParameterizedType) returnType);
     //responseType:java.util.List<com.example.retrofit.SimpleService$Contributor>
     final Executor executor =

@@ -64,10 +64,14 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
       adapterType = method.getGenericReturnType();
     }
 
+    //这里根据返回值类型来选择对应的CallAdapter，如果匹配不到，则会抛出IllegalArgumentException异常
+    //不设置的情况下是DefaultCallFactory$CallAdapter匿名类对象
     CallAdapter<ResponseT, ReturnT> callAdapter =
         createCallAdapter(retrofit, method, adapterType, annotations);
+    //DefaultCallFactory的实现是：这里是拿到CallAdapter可转换数据类型的参数化类型，如Call<Entity>，这里的responseType的值就是Entity
     Type responseType = callAdapter.responseType();
     if (responseType == okhttp3.Response.class) {
+      //这里不希望接口返回参数类型是Call<okhttp3.Response>
       throw methodError(
           method,
           "'"
@@ -75,6 +79,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
               + "' is not a valid response body type. Did you mean ResponseBody?");
     }
     if (responseType == Response.class) {
+      //这里不希望接口返回参数类型是Call<Response>
       throw methodError(method, "Response must include generic type (e.g., Response<String>)");
     }
     // TODO support Unit for Kotlin?
