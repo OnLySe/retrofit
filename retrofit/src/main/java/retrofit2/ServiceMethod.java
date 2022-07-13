@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 
 abstract class ServiceMethod<T> {
   static <T> ServiceMethod<T> parseAnnotations(Retrofit retrofit, Method method) {
+    //这里解析注解上的值和URL的所可能需要的信息
     RequestFactory requestFactory = RequestFactory.parseAnnotations(retrofit, method);
 
     //获取返回值类型，如是Call<List<String>>，则会返回Call<List<String>>，而不是Call。

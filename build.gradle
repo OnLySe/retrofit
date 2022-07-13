@@ -49,7 +49,6 @@ buildscript {
   repositories {
     mavenCentral()
     google()
-    jcenter()
     gradlePluginPortal()
   }
 }
@@ -58,7 +57,6 @@ subprojects {
   repositories {
     mavenCentral()
     google()
-    jcenter()
   }
 
   tasks.withType(JavaCompile).configureEach { task ->

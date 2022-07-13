@@ -229,7 +229,7 @@ final class RequestFactory {
 
     /**
      * 解析方法上的注解，这里仅处理Retrofit定义的注解
-     * @param annotation
+     * @param annotation 方法上的注解
      */
     private void parseMethodAnnotation(Annotation annotation) {
       if (annotation instanceof DELETE) {
@@ -371,7 +371,6 @@ final class RequestFactory {
      * @param type 参数类型信息，如果是泛型类型，则完整显示泛型类型
      * @param annotations 注解数组，参数上可以添加多个注解
      * @param annotation 指定解析的注解，这里只解析Retrofit定义的注解，如@Path
-     * @return
      */
     @Nullable
     private ParameterHandler<?> parseParameterAnnotation(
