@@ -3,6 +3,8 @@ apply plugin: 'com.vanniktech.maven.publish'
 
 dependencies {
   api project(':retrofit')
+
+  testImplementation project(':retrofit-converters:gson')
   api deps.guava
 
   compileOnly deps.findBugsAnnotations

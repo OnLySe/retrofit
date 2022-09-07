@@ -47,18 +47,24 @@ buildscript {
     classpath 'gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.9'
   }
   repositories {
+    maven { url("https://maven.aliyun.com/repository/google") }
+    maven { url("https://maven.aliyun.com/repository/public") }
+    maven { url("https://maven.aliyun.com/repository/jcenter") }
     mavenCentral()
     google()
-    jcenter()
+    //jcenter()
     gradlePluginPortal()
   }
 }
 
 subprojects {
   repositories {
+    maven { url("https://maven.aliyun.com/repository/google") }
+    maven { url("https://maven.aliyun.com/repository/public") }
+    maven { url("https://maven.aliyun.com/repository/jcenter") }
     mavenCentral()
     google()
-    jcenter()
+    //jcenter()
   }
 
   tasks.withType(JavaCompile).configureEach { task ->
