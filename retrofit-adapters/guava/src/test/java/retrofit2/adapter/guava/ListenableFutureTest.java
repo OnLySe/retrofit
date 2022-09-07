@@ -22,13 +22,17 @@ import static org.junit.Assert.fail;
 import com.google.common.util.concurrent.ListenableFuture;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+
+import com.google.gson.Gson;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 
 public final class ListenableFutureTest {
@@ -37,6 +41,11 @@ public final class ListenableFutureTest {
   interface Service {
     @GET("/")
     ListenableFuture<String> body();
+    @GET("/")
+    ListenableFuture<NodeToken> body2();
+
+    @GET("/")
+    Call<NodeToken> body3();
 
     @GET("/")
     ListenableFuture<Response<String>> response();
@@ -49,10 +58,40 @@ public final class ListenableFutureTest {
     Retrofit retrofit =
         new Retrofit.Builder()
             .baseUrl(server.url("/"))
+            .addConverterFactory(GsonConverterFactory.create())
             .addConverterFactory(new StringConverterFactory())
             .addCallAdapterFactory(GuavaCallAdapterFactory.create())
             .build();
     service = retrofit.create(Service.class);
+  }
+
+  protected static class NodeToken {
+    private String access_token;
+    private String access_token_expire;
+
+    public String getAccess_token() {
+      return access_token;
+    }
+
+    public void setAccess_token(String access_token) {
+      this.access_token = access_token;
+    }
+
+    public String getAccess_token_expire() {
+      return access_token_expire;
+    }
+
+    public void setAccess_token_expire(String access_token_expire) {
+      this.access_token_expire = access_token_expire;
+    }
+
+    @Override
+    public String toString() {
+      return "NodeToken{" +
+              "access_token='" + access_token + '\'' +
+              ", access_token_expire='" + access_token_expire + '\'' +
+              '}';
+    }
   }
 
   @Test
@@ -61,6 +100,29 @@ public final class ListenableFutureTest {
 
     ListenableFuture<String> future = service.body();
     assertThat(future.get()).isEqualTo("Hi");
+  }
+
+  @Test
+  public void bodySuccess200_2() throws Exception {
+    Gson gson = new Gson();
+    String json = "{\n" +
+            "    \"access_token\": \"tokentokentoken\",\n" +
+            "    \"access_token_expire\": 3599\n" +
+            "}";
+    NodeToken tokenBean = gson.fromJson(json, NodeToken.class);
+    System.out.println(tokenBean.access_token);
+
+    server.enqueue(new MockResponse().setBody(json));
+    ListenableFuture<NodeToken> future = service.body2();
+    NodeToken body2 = future.get();
+    System.out.println("bodySuccess200: body2: " + body2);
+    assertThat(body2.access_token).isEqualTo(tokenBean.access_token);
+
+    server.enqueue(new MockResponse().setBody(json));
+    NodeToken body3 = service.body3().execute().body();
+    System.out.println("bodySuccess200: body3: " + body3);
+    assertThat(body3.access_token).isEqualTo(tokenBean.access_token);
+
   }
 
   @Test
