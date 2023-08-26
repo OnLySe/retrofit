@@ -26,7 +26,12 @@ import javax.annotation.Nullable;
 import kotlin.coroutines.Continuation;
 import okhttp3.ResponseBody;
 
-/** Adapts an invocation of an interface method into an HTTP call. */
+/**
+ * Adapts an invocation of an interface method into an HTTP call.
+ *
+ * <br>{@link ResponseT}表示的是接口方法返回值的外层包装类型， {@link ReturnT}表示的是我们实际需要的数据类型。
+ * 对于Call<List<Contributor>>这样的接口方法来说，ResponseT代表Call，ReturnT代表Contributor。
+ */
 abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<ReturnT> {
   /**
    * Inspects the annotations on an interface method to construct a reusable service method that
@@ -149,6 +154,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
   @Override
   final @Nullable ReturnT invoke(Object[] args) {
     Call<ResponseT> call = new OkHttpCall<>(requestFactory, args, callFactory, responseConverter);
+    //HttpServiceMethod实现了invoke()方法，并将操作转给了adapt()方法来完成
     return adapt(call, args);
   }
 

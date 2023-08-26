@@ -28,12 +28,15 @@ abstract class ServiceMethod<T> {
 
     //获取返回值类型，如是Call<List<String>>，则会返回Call<List<String>>，而不是Call。
     Type returnType = method.getGenericReturnType();
+    //如果返回值包含未确定的泛型类型或者是包含通配符的话，那么就抛出异常
+    //因为 Retrofit 无法构造出一个不具有确定类型的对象作为返回值
     if (Utils.hasUnresolvableType(returnType)) {
       throw methodError(
           method,
           "Method return type must not include a type variable or wildcard: %s",
           returnType);
     }
+    //返回值类型不能是void
     if (returnType == void.class) {
       throw methodError(method, "Service methods cannot return void.");
     }
