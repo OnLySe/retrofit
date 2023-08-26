@@ -46,6 +46,9 @@ buildscript {
     classpath 'gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.8'
   }
   repositories {
+    maven { url("https://maven.aliyun.com/repository/google") }
+    maven { url("https://maven.aliyun.com/repository/public") }
+    maven { url("https://maven.aliyun.com/repository/jcenter") }
     mavenCentral()
     google()
     jcenter()
@@ -55,6 +58,9 @@ buildscript {
 
 subprojects {
   repositories {
+    maven { url("https://maven.aliyun.com/repository/google") }
+    maven { url("https://maven.aliyun.com/repository/public") }
+    maven { url("https://maven.aliyun.com/repository/jcenter") }
     mavenCentral()
     google()
     jcenter()
